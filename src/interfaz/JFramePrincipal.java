@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
+import logica.FCFS;
 import logica.ProcesosDisponibles;
 
 import java.awt.event.ActionEvent;
@@ -65,7 +66,6 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 	
 	private JPanel panelMemoria;
 	private JLabel lblMemoriaPrincipalpal;
-	private PanelDibujoMem dibujoMemoria;
 	private JLabel lblMemoriaLibre;
 	private JLabel lblKB;
 	private PanelDibujoProc dibujoProcesos;
@@ -242,7 +242,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		lblMemoriaPrincipalpal.setBounds(25, 207, 126, 13);
 		panelMemoria.add(lblMemoriaPrincipalpal);
 		
-		dibujoProcesos = new PanelDibujoProc(modelo, asignacion);
+		//dibujoProcesos = new PanelDibujoProc(modelo, asignacion);
 		panelMemoria.add(dibujoProcesos);
 		dibujoProcesos.setBounds(25, 230, 531, 80);
 		
@@ -256,9 +256,6 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		lblKB.setBounds(135, 68, 65, 13);
 		panelMemoria.add(lblKB);
 		
-		dibujoMemoria = dibujoProcesos.getDibujoMemLibre();
-		dibujoMemoria.setBounds(45, 45, 80, 150);
-		panelMemoria.add(dibujoMemoria);
 		
 		lblInicioMem = new JLabel("0 KB");
 		lblInicioMem.setFont(new Font("Tahoma", Font.PLAIN, 9));
@@ -275,7 +272,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		//Crea la tabla de procesos para PartEstaFijas
 		if(modelo == 1 ) {
 			
-			tablaProcesos = new JTable(dibujoProcesos.getParticionesEstFijas().getModeloTabla());
+			
 			
 			scrollTabla = new JScrollPane();
 			scrollTabla.setViewportView(tablaProcesos);
@@ -290,7 +287,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		
 		if(modelo == 2) {
 			
-			tablaProcesos = new JTable(dibujoProcesos.getParticionesEstVariables().getModeloTabla());
+			
 			
 			scrollTabla = new JScrollPane();
 			scrollTabla.setViewportView(tablaProcesos);
@@ -305,7 +302,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		
 		if(modelo == 3) {
 			
-			tablaProcesos = new JTable(dibujoProcesos.getParticionesDinamicas().getModeloTabla());
+			
 			
 			scrollTabla = new JScrollPane();
 			scrollTabla.setViewportView(tablaProcesos);
@@ -321,7 +318,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		//Crea la tabla de procesos para Paginacion
 		if(modelo == 4) {
 			
-			tablaProcesos = new JTable(dibujoProcesos.getPaginacion().getModeloTabla());
+			
 			
 			scrollTabla = new JScrollPane();
 			scrollTabla.setViewportView(tablaProcesos);
@@ -336,7 +333,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		
 		if (modelo == 5) {
 			
-			tablaProcesos = new JTable(dibujoProcesos.getSegmentacion().getModeloTabla());
+			
 			
 			scrollTabla = new JScrollPane();
 			scrollTabla.setViewportView(tablaProcesos);
@@ -371,6 +368,18 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 			
             if(tglbON_OFF.isSelected()){
             	
+            	//Modelo seleccionado
+            	if(rdbtnFCFS.isSelected())
+            		algoritmoFCFS();
+            	else if(rdbtnSPN.isSelected())
+            		modelo = 2;
+            	else if(rdbtnSRTF.isSelected())
+            		modelo = 3;
+            	else if(rdbtnRR.isSelected())
+            		modelo = 4;
+            	else if(rdbtnDerPreferente.isSelected())
+            		modelo = 5;
+            	
             }else {
             	//habilitarDetenido();
             	this.dispose();
@@ -385,24 +394,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		}
 		
 	}
-	
-	/**
-	 * Actualiza la lista de procesos activos
-	 */
-	/*public void actualizarActivos() {
-		//Generar lista de procesos activos a partir de las particiones
-		if(modelo == 1)
-			activos = generarListaActivos(dibujoProcesos.getParticionesEstFijas().getParticiones());
-		else if (modelo == 2)
-			activos = generarListaActivos(dibujoProcesos.getParticionesEstVariables().getParticiones());
-		else if (modelo == 3)
-			activos = generarListaActivos(dibujoProcesos.getParticionesDinamicas().getParticiones());
-		else if (modelo == 4)
-			activos = generarListaActivos(dibujoProcesos.getPaginacion().getParticiones());
-		else if (modelo == 5)
-			activos = generarListaActivos(dibujoProcesos.getSegmentacion().getParticiones());
-	}*/
-	
+		
 	/**
 	 * Genera la lista de procesos disponibles
 	 * @return Arreglo de String con procesos disponibles
@@ -415,7 +407,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		for (int i = 0; i < listaProcesos.length; i++ ) {
 			listaProcesos[i] = procesosDisponibles.getDisponibles()[i].getPID() + " - " + 
 							   procesosDisponibles.getDisponibles()[i].getNombre() 
-							   + " - Uso CPU:"+ procesosDisponibles.getDisponibles()[i].getTamano() ;
+							   + " - Uso CPU:"+ procesosDisponibles.getDisponibles()[i].gettEjecucion() ;
 		}
 		
 		return listaProcesos;
@@ -431,7 +423,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		//Insertando en la tabla de procesos
 		procesoModelo[0][0] = procesosDisponibles.getDisponibles()[seleccionado].getNombre();
 		procesoModelo[0][1] = (int)spnTLlegada.getValue();
-		procesoModelo[0][2] = procesosDisponibles.getDisponibles()[seleccionado].getTamano();
+		procesoModelo[0][2] = procesosDisponibles.getDisponibles()[seleccionado].gettEjecucion();
 		procesoModelo[0][3] = (int)spnIInterrup.getValue();
 		procesoModelo[0][4] = (int)spnTInterrup.getValue();
 		procesoModelo[0][5] = 0;
@@ -440,6 +432,12 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		
 	}
 	
+	/**
+	 * Desabilitar paneles que no deben estar activos
+	 */
+	public void algoritmoFCFS() {
+		FCFS fcfs = new FCFS(modeloTabla);
+	}
 	
 	/**
 	 * Desabilitar paneles que no deben estar activos

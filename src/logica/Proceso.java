@@ -1,44 +1,35 @@
 package logica;
 
-import java.awt.Color;
-
 public class Proceso {
 	
 	public Proceso() {
 	}
 	
-	public Proceso(int PID, String nombre, int tamano, Color color) {
+	public Proceso(int PID, String nombre, int tEjecucion) {
 		this.PID = PID;
 		this.nombre = nombre;
-		this.tamano = tamano;
-		this.color = color;
+		this.tEjecucion = tEjecucion;
 	}
 
 	private int PID = -1;
 	private String nombre = "";
-	private int tamano = 0;
-	private Color color = new Color(86, 186, 7);
-	
-	//Variables para la segmentacion
-	private Object[] segDatos = {"Segmento de Datos", 0, new Color(0, 0, 0)};
-	private Object[] segCodigo = {"Segmento de Codigo", 0, new Color(0, 0, 0)};
-	private Object[] segPila = {"Segmento Pila", 0, new Color(0, 0, 0)};
-	
-	// Agregar tamaño de segmento de Datos
-	public void addSegmentoDatos(int tamano) {
-		segDatos[1] = tamano;
-	}
-	
-	// Agregar tamaño de segmento de Codigo
-	public void addSegmentoCodigo(int tamano) {
-		segCodigo[1] = tamano;
-	}
-	
-	// Agregar tamaño de segmento de Pila
-	// Se calcula como el 10% del tamaño del proceso (Propuesta propia)
-	public void addSegmentoPila(int tamano) {
-		segPila[1] = tamano;
-	}
+	private int tEjecucion = 0;
+	private int llegada = -1;
+	private int inicioB = -1;
+	private int duracionB = -1;
+	//"restante" almacena el tiempo que le queda al proceso para finalizar 
+	private int restante = 0;
+	private int espera = -1;
+	private int bloqueo = -1;
+	private int iFinal = -1;
+	private int tRetorno = -1;
+	private int tPerdido = -1;
+	private int penalidad = -1;
+	private int tRespuesta = -1;
+	/**
+	 * 1=Sin iniciar
+	 */
+	private int estado = -1;
 	
 	// Getter y setter
 	public int getPID() {
@@ -57,44 +48,119 @@ public class Proceso {
 		this.nombre = nombre;
 	}
 
-	public int getTamano() {
-		return tamano;
+	public int gettEjecucion() {
+		return tEjecucion;
 	}
 
-	public void setTamano(int tamano) {
-		this.tamano = tamano;
+	public void settEjecucion(int tEjecucion) {
+		this.tEjecucion = tEjecucion;
 	}
 
-	public Color getColor() {
-		return color;
+	public int getLlegada() {
+		return llegada;
 	}
 
-	public void setColor(Color color) {
-		this.color = color;
+	public void setLlegada(int llegada) {
+		this.llegada = llegada;
 	}
 
-	public Object[] getSegDatos() {
-		return segDatos;
+	public int getInicioB() {
+		return inicioB;
 	}
 
-	public void setSegDatos(Object[] segDatos) {
-		this.segDatos = segDatos;
+	public void setInicioB(int inicioB) {
+		this.inicioB = inicioB;
 	}
 
-	public Object[] getSegCodigo() {
-		return segCodigo;
+	public int getDuracionB() {
+		return duracionB;
 	}
 
-	public void setSegCodigo(Object[] segCodigo) {
-		this.segCodigo = segCodigo;
+	public void setDuracionB(int duracionB) {
+		this.duracionB = duracionB;
 	}
 
-	public Object[] getSegPila() {
-		return segPila;
+	public int getEspera() {
+		return espera;
 	}
 
-	public void setSegPila(Object[] segPila) {
-		this.segPila = segPila;
+	public void setEspera(int espera) {
+		this.espera = espera;
+	}
+
+	public int getBloqueo() {
+		return bloqueo;
+	}
+
+	public void setBloqueo(int bloqueo) {
+		this.bloqueo = bloqueo;
+	}
+
+	public int getiFinal() {
+		return iFinal;
+	}
+
+	public void setiFinal(int iFinal) {
+		this.iFinal = iFinal;
+	}
+
+	public int gettRetorno() {
+		return tRetorno;
+	}
+
+	public void settRetorno(int tRetorno) {
+		this.tRetorno = tRetorno;
+	}
+
+	public int gettPerdido() {
+		return tPerdido;
+	}
+
+	public void settPerdido(int tPerdido) {
+		this.tPerdido = tPerdido;
+	}
+
+	public int getPenalidad() {
+		return penalidad;
+	}
+
+	public void setPenalidad(int penalidad) {
+		this.penalidad = penalidad;
+	}
+
+	public int gettRespuesta() {
+		return tRespuesta;
+	}
+
+	public void settRespuesta(int tRespuesta) {
+		this.tRespuesta = tRespuesta;
+	}
+
+	public int getRestante() {
+		return restante;
+	}
+
+	public void setRestante(int restante) {
+		this.restante = restante;
+	}
+
+	/**
+	 * 0-Sin iniciar | 1-Ejecucion |
+	 * 2-Espera | 3-Interrupcion |
+	 * 3-Finalizado
+	 */
+	public int getEstado() {
+		return estado;
+	}
+
+	/**
+	 * 0-Sin iniciar | 1-Ejecucion |
+	 * 2-Espera | 3-Interrupcion |
+	 * 3-Finalizado
+	 * @param estado 
+	 */
+	public void setEstado(int estado) {
+		this.estado = estado;
 	}
 	
 }

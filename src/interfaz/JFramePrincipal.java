@@ -8,6 +8,8 @@ import javax.swing.JLabel;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
+
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.JRadioButton;
@@ -24,7 +26,6 @@ import javax.swing.JToggleButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.SwingConstants;
 import javax.swing.JTable;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
@@ -33,9 +34,7 @@ import javax.swing.border.EtchedBorder;
 @SuppressWarnings("serial")
 public class JFramePrincipal extends JFrame implements ActionListener{
 
-	private int modelo = 1;				//Modelo seleccionado
-	private int asignacion = 1;			//Algoritmos de asignacion
-	
+	private int algoritmo = 1;				//Modelo seleccionado
 	private JPanel panelPrincipal;
 	
 	private JPanel panelProcesos;
@@ -51,6 +50,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 	private JSpinner spnIInterrup;
 	private JLabel lblTInterrup;
 	private JSpinner spnTInterrup;
+	private JButton btnAgregarProceso;
 	
 	private JPanel panelModPlanificacion;
 	private ButtonGroup btgModMemoria;
@@ -59,33 +59,25 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 	private JRadioButton rdbtnSRTF;
 	private JRadioButton rdbtnRR;
 	private JRadioButton rdbtnDerPreferente;
-	private JCheckBox chckbxCompactacion;
+	private JCheckBox chckbxRetroalimentacion;
 	
 	private JPanel panelTabla;
 	private DefaultTableModel modeloTabla;
 	
-	private JPanel panelMemoria;
-	private JLabel lblMemoriaPrincipalpal;
-	private JLabel lblMemoriaLibre;
-	private JLabel lblKB;
-	private PanelDibujoProc dibujoProcesos;
-	private JLabel lblInicioMem;
-	private JLabel lblFinMemoria;
 	private JTable tablaProcesos;
 	private JScrollPane scrollTabla;
 	private JLabel lblTablaProcesos;
 	private String[] nombreColumna = {"Proceso", "Llegada", "T. Ejecucion", "Inicio B.", "Duracion B.", "T. Espera", "T. Bloqueo"};
 	private Object[][] procesoModelo = new Object[0][7];
 	
-
-	private JButton btnAgregarProceso;
-
+	private JPanel panelDibujo;
+	private PanelDibujoProc dibujoProcesos;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public JFramePrincipal() {
 		setTitle("Simulador Gestor de Memoria");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(50, 50, 910, 650);
+		setBounds(50, 50, 1000, 700);
 		
 		panelPrincipal = new JPanel();
 		panelPrincipal.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -95,7 +87,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		//Panel de seleccion de procesos
 		panelProcesos = new JPanel();
 		panelProcesos.setBorder(new TitledBorder(null, "", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panelProcesos.setBounds(10, 10, 876, 223);
+		panelProcesos.setBounds(10, 10, 966, 223);
 		panelPrincipal.add(panelProcesos);
 		panelProcesos.setLayout(null);
 		
@@ -191,10 +183,10 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		rdbtnDerPreferente.setBounds(10, 141, 197, 21);
 		panelModPlanificacion.add(rdbtnDerPreferente);
 		
-		chckbxCompactacion = new JCheckBox("<html>Retroalimentacion</html>");
-		chckbxCompactacion.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		chckbxCompactacion.setBounds(35, 164, 172, 21);
-		panelModPlanificacion.add(chckbxCompactacion);
+		chckbxRetroalimentacion = new JCheckBox("<html>Retroalimentacion</html>");
+		chckbxRetroalimentacion.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		chckbxRetroalimentacion.setBounds(35, 164, 172, 21);
+		panelModPlanificacion.add(chckbxRetroalimentacion);
 		
 		//Agrega botones seleccion de proceso a un grupo
 		btgModMemoria = new ButtonGroup();
@@ -211,7 +203,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		
 		panelTabla = new JPanel();
 		panelTabla.setBorder(new TitledBorder(null, "", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panelTabla.setBounds(10, 243, 876, 156);
+		panelTabla.setBounds(10, 243, 966, 156);
 		panelPrincipal.add(panelTabla);
 			
 		//Variables para la creacion de la tabla de procesos
@@ -221,141 +213,31 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		
 		scrollTabla = new JScrollPane();
 		scrollTabla.setViewportView(tablaProcesos);
-		scrollTabla.setBounds(0, 0, 876, 156);
+		scrollTabla.setBounds(0, 0, 966, 156);
 		panelTabla.add(scrollTabla);
 		
-		//Panel Grafico Memoria
-		panelMemoria = new JPanel();
-		panelMemoria.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panelMemoria.setBounds(10, 413, 876, 190);
-		panelPrincipal.add(panelMemoria);
-		panelMemoria.setLayout(null);
-		
+		//Panel Dubujo de procesos
+		/*panelDibujo = new JPanel();
+		panelDibujo.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelDibujo.setBounds(10, 413, 876, 190);
+		panelPrincipal.add(panelDibujo);
+		panelDibujo.setLayout(null);
+		*/
 		//dibujoProcesos();
+		
 	}
 	
 	//Dibujar particiones
 	public void dibujoProcesos() {
-		
-		//Proccesos en memoria dibujo
-		lblMemoriaPrincipalpal = new JLabel("Memoria Principal");
-		lblMemoriaPrincipalpal.setBounds(25, 207, 126, 13);
-		panelMemoria.add(lblMemoriaPrincipalpal);
-		
-		//dibujoProcesos = new PanelDibujoProc(modelo, asignacion);
-		panelMemoria.add(dibujoProcesos);
-		dibujoProcesos.setBounds(25, 230, 531, 80);
-		
-		//Dibujo mamoria libre y ocupada
-		lblMemoriaLibre = new JLabel("Memoria Ocupada");
-		lblMemoriaLibre.setBounds(135, 45, 115, 13);
-		lblMemoriaLibre.setVisible(true);
-		panelMemoria.add(lblMemoriaLibre);
-		
-		lblKB = new JLabel("KB");
-		lblKB.setBounds(135, 68, 65, 13);
-		panelMemoria.add(lblKB);
+
+		dibujoProcesos = new PanelDibujoProc(algoritmo, modeloTabla);
+		dibujoProcesos.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelPrincipal.add(dibujoProcesos);
+		dibujoProcesos.setBounds(10, 413, 966, 240);
+		dibujoProcesos.setLayout(null);
 		
 		
-		lblInicioMem = new JLabel("0 KB");
-		lblInicioMem.setFont(new Font("Tahoma", Font.PLAIN, 9));
-		lblInicioMem.setHorizontalAlignment(SwingConstants.CENTER);
-		lblInicioMem.setBounds(10, 315, 45, 13);
-		panelMemoria.add(lblInicioMem);
-		
-		lblFinMemoria = new JLabel("16384 KB");
-		lblFinMemoria.setFont(new Font("Tahoma", Font.PLAIN, 9));
-		lblFinMemoria.setHorizontalAlignment(SwingConstants.CENTER);
-		lblFinMemoria.setBounds(525, 315, 45, 13);
-		panelMemoria.add(lblFinMemoria);
-		
-		//Crea la tabla de procesos para PartEstaFijas
-		if(modelo == 1 ) {
-			
-			
-			
-			scrollTabla = new JScrollPane();
-			scrollTabla.setViewportView(tablaProcesos);
-			scrollTabla.setBounds(256, 67, 299, 138);
-			panelMemoria.add(scrollTabla);
-			
-			lblTablaProcesos = new JLabel("Tabla De Particiones");
-			lblTablaProcesos.setHorizontalAlignment(SwingConstants.CENTER);
-			lblTablaProcesos.setBounds(260, 45, 296, 13);
-			panelMemoria.add(lblTablaProcesos);
-		}
-		
-		if(modelo == 2) {
-			
-			
-			
-			scrollTabla = new JScrollPane();
-			scrollTabla.setViewportView(tablaProcesos);
-			scrollTabla.setBounds(256, 67, 299, 138);
-			panelMemoria.add(scrollTabla);
-			
-			lblTablaProcesos = new JLabel("Tabla De Particiones");
-			lblTablaProcesos.setHorizontalAlignment(SwingConstants.CENTER);
-			lblTablaProcesos.setBounds(260, 45, 296, 13);
-			panelMemoria.add(lblTablaProcesos);
-		}
-		
-		if(modelo == 3) {
-			
-			
-			
-			scrollTabla = new JScrollPane();
-			scrollTabla.setViewportView(tablaProcesos);
-			scrollTabla.setBounds(256, 67, 299, 138);
-			panelMemoria.add(scrollTabla);
-			
-			lblTablaProcesos = new JLabel("Tabla De Particiones");
-			lblTablaProcesos.setHorizontalAlignment(SwingConstants.CENTER);
-			lblTablaProcesos.setBounds(260, 45, 296, 13);
-			panelMemoria.add(lblTablaProcesos);
-		}
-		
-		//Crea la tabla de procesos para Paginacion
-		if(modelo == 4) {
-			
-			
-			
-			scrollTabla = new JScrollPane();
-			scrollTabla.setViewportView(tablaProcesos);
-			scrollTabla.setBounds(256, 67, 299, 138);
-			panelMemoria.add(scrollTabla);
-			
-			lblTablaProcesos = new JLabel("Tabla De Paginas");
-			lblTablaProcesos.setHorizontalAlignment(SwingConstants.CENTER);
-			lblTablaProcesos.setBounds(260, 45, 296, 13);
-			panelMemoria.add(lblTablaProcesos);
-		}
-		
-		if (modelo == 5) {
-			
-			
-			
-			scrollTabla = new JScrollPane();
-			scrollTabla.setViewportView(tablaProcesos);
-			scrollTabla.setBounds(256, 67, 299, 138);
-			panelMemoria.add(scrollTabla);
-			
-			lblTablaProcesos = new JLabel("Tabla De Segmentos");
-			lblTablaProcesos.setHorizontalAlignment(SwingConstants.CENTER);
-			lblTablaProcesos.setBounds(260, 45, 296, 13);
-			panelMemoria.add(lblTablaProcesos);
-		
-			
-			spnTLlegada = new JSpinner();
-			spnTLlegada.setModel(new SpinnerNumberModel(Integer.valueOf(0), null, null, Integer.valueOf(1)));
-			spnTLlegada.setToolTipText("Tama\u00F1o del Segmento de Codigo (KB)");
-			spnTLlegada.setFont(new Font("Tahoma", Font.PLAIN, 10));
-			spnTLlegada.setBounds(45, 196, 47, 17);
-			//spnCodigo.add
-			panelProcesos.add(spnTLlegada);
-			
-		}
-		
+
 	}
 	
 	//Manejo eventos
@@ -370,15 +252,17 @@ public class JFramePrincipal extends JFrame implements ActionListener{
             	
             	//Modelo seleccionado
             	if(rdbtnFCFS.isSelected())
-            		algoritmoFCFS();
+            		algoritmo = 1;
             	else if(rdbtnSPN.isSelected())
-            		modelo = 2;
+            		algoritmo = 2;
             	else if(rdbtnSRTF.isSelected())
-            		modelo = 3;
+            		algoritmo = 3;
             	else if(rdbtnRR.isSelected())
-            		modelo = 4;
+            		algoritmo = 4;
             	else if(rdbtnDerPreferente.isSelected())
-            		modelo = 5;
+            		algoritmo = 5;
+            	
+            	dibujoProcesos();
             	
             }else {
             	//habilitarDetenido();
@@ -436,7 +320,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 	 * Desabilitar paneles que no deben estar activos
 	 */
 	public void algoritmoFCFS() {
-		FCFS fcfs = new FCFS(modeloTabla);
+		new FCFS(modeloTabla);
 	}
 	
 	/**
@@ -446,7 +330,7 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		rdbtnFCFS.setEnabled(false);
 		rdbtnSPN.setEnabled(false);
 		rdbtnSRTF.setEnabled(false);
-		chckbxCompactacion.setEnabled(false);
+		chckbxRetroalimentacion.setEnabled(false);
 		rdbtnRR.setEnabled(false);
 		rdbtnDerPreferente.setEnabled(false);
 	}
@@ -459,8 +343,11 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 		rdbtnFCFS.setEnabled(true);
 		rdbtnSPN.setEnabled(true);
 		rdbtnSRTF.setEnabled(true);
-		chckbxCompactacion.setEnabled(true);
+		chckbxRetroalimentacion.setEnabled(true);
 		rdbtnRR.setEnabled(true);
 		rdbtnDerPreferente.setEnabled(true);
 	}
+	
+
+
 }

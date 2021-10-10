@@ -11,25 +11,21 @@ public class Proceso {
 		this.tEjecucion = tEjecucion;
 	}
 
-	private int PID = -1;
-	private String nombre = "";
-	private int tEjecucion = 0;
-	private int llegada = -1;
-	private int inicioB = -1;
-	private int duracionB = -1;
-	//"restante" almacena el tiempo que le queda al proceso para finalizar 
-	private int restante = 0;
-	private int espera = -1;
-	private int bloqueo = -1;
-	private int iFinal = -1;
-	private int tRetorno = -1;
-	private int tPerdido = -1;
-	private int penalidad = -1;
-	private int tRespuesta = -1;
-	/**
-	 * 1=Sin iniciar
-	 */
-	private int estado = -1;
+	private int PID = -1;			//ID del proceso
+	private String nombre = "";		//Nombre del proceso
+	private int tEjecucion = 0;		//Tiempo que necesita el proceso para ejecutarse
+	private int llegada = -1;		//Tiempo en el que llega a la cola
+	private int inicioB = 0;		//Tiempo de inicio de interrupcion
+	private int duracionB = 0;		//Duracion de la interrupcion
+	private int restante = 0;		//Tiempo que le queda al proceso para finalizar
+	private int espera = 0;			//Tiempo que el proceso estubo en espera, no incluye tBloqueo
+	private int bloqueo = 0;		//Tiempo que el proceso estubo en bloqueo
+	private int iFinal = 0;			//Instante en el que el proceso finalizo
+	private int tRetorno = 0;		//Tiempo total que duro el proceso en la cola
+	private int tPerdido = 0;		//tRetorno - tEjecucion
+	private int penalidad = -1;		//tRetorno/tEjecucion
+	private int tRespuesta = -1;	//Tiempo desde que el proceso llego a la cola hasta ser atendido
+	private int estado = -1;		//Almacena el estado del proceso
 	
 	// Getter y setter
 	public int getPID() {
@@ -147,7 +143,7 @@ public class Proceso {
 	/**
 	 * 0-Sin iniciar | 1-Ejecucion |
 	 * 2-Espera | 3-Interrupcion |
-	 * 3-Finalizado
+	 * 4-Finalizado
 	 */
 	public int getEstado() {
 		return estado;
@@ -156,7 +152,7 @@ public class Proceso {
 	/**
 	 * 0-Sin iniciar | 1-Ejecucion |
 	 * 2-Espera | 3-Interrupcion |
-	 * 3-Finalizado
+	 * 4-Finalizado
 	 * @param estado 
 	 */
 	public void setEstado(int estado) {

@@ -1,318 +1,134 @@
 package interfaz;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
+import java.awt.Graphics2D;
+import java.awt.BasicStroke;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
-import javax.swing.UIManager;
+import javax.swing.table.DefaultTableModel;
 
-import logica.Proceso;
+import logica.FCFS;
 
 @SuppressWarnings("serial")
 public class PanelDibujoProc extends JPanel{
 	
-	public PanelDibujoProc(int tiempo, ArrayList<Proceso> listaProcesos) {
-		this.tiempo = tiempo;
-		this.listaProcesos = listaProcesos;
-	}
-	
-	private int tiempo = 0;
-	private ArrayList<Proceso> listaProcesos;
-	
-	
+	private int algoritmo;
+	private DefaultTableModel modeloTabla;
+	private ArrayList<int[]> dibujo = new ArrayList<int[]>();
+	private FCFS fcfs;
 	
 	private Color verde = new Color(86, 186, 7);
-	private Color amarillo = new Color(215, 215, 84);
-	private Color negro = new Color(0, 0, 0);
+	private Color rojo = new Color(227, 27, 4);
+	private Color gris = new Color(179, 179, 179);
+	private Color grisClaro = new Color(200, 200, 200);
+
+	public PanelDibujoProc(int algoritmo, DefaultTableModel modeloTabla) {
+		this.algoritmo = algoritmo;
+		this.modeloTabla = modeloTabla;
+		inciarAlgoritmo();
+	}
 	
-	/**
-	 * Pintar el recuadro de procesos en memoria
-	 */
-    public void paint(Graphics g) {
+	
+	private void inciarAlgoritmo() {
+		if(algoritmo == 1) {
+			fcfs = new FCFS(modeloTabla);
+			dibujo = fcfs.getDibujo();
+			imprimirEstDibujo();
+			//System.out.println(modeloTabla.getRowCount());
+			//System.out.println(dibujo.size());
+		}
+		
+	}
 
+
+	public void paint (Graphics g){
+        super.paint(g);
+        Graphics2D g2d=(Graphics2D)g;
+        float distanciado[] = {4};
+        BasicStroke punteado= new BasicStroke(1,BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER,1.0f, distanciado, 0.0f);
+
+    	g.setColor (Color.black);
+    	//Linea vertical eje
+    	g.drawLine (50, 210, 50, 20);
+    	//Linea horizontal eje
+    	g.drawLine (933, 210, 50, 210);
     	
-    	/*
-    	//Modelo Particiones Estaticas Fijas
-    	if(modelo == 1) {
-        	
-        	int pos = 0; 	//Llava la posicion de donde se va a dibujar
-        	g.setFont(new Font("Tahoma", Font.BOLD, 7));		//Tamaño del texto en el dibujo
-        	
-        	//Calculando tamaño del S.O. para ser dibujada
-        	double tamanoSO = (particionesEstFijas.getSO().getTamano()*100.0)/particionesEstFijas.getMemoriaPpal();
-        	int drawSO = (int) (getWidth()*(tamanoSO/100));
-
-        	g.setColor(amarillo);
-        	g.fillRect(pos, 0, drawSO, getHeight());
-        	g.setColor(negro);
-        	g.drawRect(pos, 0, drawSO, getHeight()-1);
-        	
-        	g.drawString(particionesEstFijas.getParticiones()[0].getProceso().getNombre(), 5, (getHeight()*2)/5);
-        	g.drawString("PID=" + particionesEstFijas.getParticiones()[0].getProceso().getPID(), 5, ((getHeight()*4)/5));
-        	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-        	
-        	pos = pos + drawSO;
-        	
-        	//Recorrer el arreglo de particiones para ir dibujando cada una
-        	for(int i=1; i<particionesEstFijas.getParticiones().length;i++) {
-        		
-        		int tamDibujo = cacularTamDibujo(i);
-        		int tamProceso = 0;
-        		
-        		g.setColor(verde);
-        		
-        		//Verificar si hay proceso en la particion, si lo hay calcular el tamaño
-        		if(particionesEstFijas.getParticiones()[i].getDisponible() == true)
-        			tamProceso = 0;	
-        		else
-        			tamProceso = cacularTamProceso(i);
-
-            	g.fillRect(pos, 0, tamDibujo, getHeight());	//Pintar particion
-            	
-            	if (tamProceso != 0) {		//Si la particion tiene proceso pintar proceso
-            		g.setColor(particionesEstFijas.getParticiones()[i].getProceso().getColor());
-            		g.fillRect(pos, 0, tamProceso, getHeight());
-            	}
-            	
-            	g.setColor(negro);			//Pintar borde
-            	g.drawRect(pos, 0, tamDibujo, getHeight()-1);
-            	
-            	if(particionesEstFijas.getParticiones()[i].getDisponible() == false) {
-                	g.drawString(particionesEstFijas.getParticiones()[i].getProceso().getNombre(), pos+5, (getHeight()*2)/5);
-                	g.drawString("PID=" + particionesEstFijas.getParticiones()[i].getProceso().getPID(), pos+5, ((getHeight()*4)/5));
-                	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-            	}
-            	pos = pos + tamDibujo;		//Se suma el area dibujada a la posiscion
-        	}
+    	int posX = 1;				//Posicion px en X, varia segun lo que se desee dibujar				
+    	int posY = 200;				//Ultimo PX disponible en Y
+    	int posY2 = 0;				//Auxiliar para moverse verticalmente
+    	int tamDibujoProc = 25;		//Ancho disponible para c/proceso, dibujar 8 procesos en 200px
+    	int unidadT = 21;			//PX entre numeracion
+    	
+    	//Escribir los nombres de procesos   	
+    	for(int i = 0; i<modeloTabla.getRowCount(); i++) {
+    		//Se toma la posicion en Y final y se va restando para subir el dibujo
+			posY2 = posY - ((i+1) * tamDibujoProc);
+	    	if(algoritmo == 1) {
+	    		g.drawString(fcfs.getListaProcesos().get(i).getNombre(), posX, (posY2+15));
+	    	}
     	}
     	
-    	//Modelo Particiones Estaticas Fijas
-    	if(modelo == 2) {
-        	
-        	int pos = 0; 	//Llava la posicion de donde se va a dibujar
-        	g.setFont(new Font("Tahoma", Font.BOLD, 7));		//Tamaño del texto en el dibujo
-        	
-        	//Calculando tamaño del S.O. para ser dibujada
-        	double tamanoSO = (particionesEstVariables.getSO().getTamano()*100.0)/particionesEstVariables.getMemoriaPpal();
-        	int drawSO = (int) (getWidth()*(tamanoSO/100));
-
-        	g.setColor(amarillo);
-        	g.fillRect(pos, 0, drawSO, getHeight());
-        	g.setColor(negro);
-        	g.drawRect(pos, 0, drawSO, getHeight()-1);
-        	
-        	g.drawString(particionesEstVariables.getParticiones()[0].getProceso().getNombre(), 5, (getHeight()*2)/5);
-        	g.drawString("PID=" + particionesEstVariables.getParticiones()[0].getProceso().getPID(), 5, ((getHeight()*4)/5));
-        	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-        	
-        	pos = pos + drawSO;
-        	
-        	//Recorrer el arreglo de particiones para ir dibujando cada una
-        	for(int i=1; i<particionesEstVariables.getParticiones().length;i++) {
-        		
-        		int tamDibujo = cacularTamDibujo(i);
-        		int tamProceso = 0;
-        		
-        		g.setColor(verde);
-        		
-        		//Verificar si hay proceso en la particion, si lo hay calcular el tamaño
-        		if(particionesEstVariables.getParticiones()[i].getDisponible() == true)
-        			tamProceso = 0;	
-        		else
-        			tamProceso = cacularTamProceso(i);
-
-            	g.fillRect(pos, 0, tamDibujo, getHeight());	//Pintar particion
-            	
-            	if (tamProceso != 0) {		//Si la particion tiene proceso pintar proceso
-            		g.setColor(particionesEstVariables.getParticiones()[i].getProceso().getColor());
-            		g.fillRect(pos, 0, tamProceso, getHeight());
-            	}
-            	
-            	g.setColor(negro);			//Pintar borde
-            	g.drawRect(pos, 0, tamDibujo, getHeight()-1);
-            	
-            	if(particionesEstVariables.getParticiones()[i].getDisponible() == false) {
-                	g.drawString(particionesEstVariables.getParticiones()[i].getProceso().getNombre(), pos+5, (getHeight()*2)/5);
-                	g.drawString("PID=" + particionesEstVariables.getParticiones()[i].getProceso().getPID(), pos+5, ((getHeight()*4)/5));
-                	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-            	}
-            	pos = pos + tamDibujo;		//Se suma el area dibujada a la posiscion
-        	}
+    	//Posicionar y bubujar ejes guias
+    	posX = 50;
+    	for (int i = 0; i <=42; i++) {
+    		if(i != 0) {
+        		//Dibujar lineas guia tiempo
+        		g2d.setColor (grisClaro);
+        		g2d.setStroke(punteado);
+        		g2d.drawLine (posX, 20, posX, 206);
+    		}
+    		//Dibuja las lineas de los numeros
+    		g.setColor (Color.black);
+    		g.drawLine (posX, 208, posX, 212);
+    		//Dibuja los numeros
+    		g.drawString(String.valueOf(i), posX-3, 230);
+    		posX = posX + unidadT;
+    		
     	}
     	
-    	//Modelo Particiones Dinamicas
-    	if(modelo == 3) {
-        	
-        	int pos = 0; 	//Llava la posicion de donde se va a dibujar
-        	g.setFont(new Font("Tahoma", Font.BOLD, 7));		//Tamaño del texto en el dibujo
-        	
-        	//Calculando tamaño del S.O. para ser dibujada
-        	double tamanoSO = (particionesDinamicas.getSO().getTamano()*100.0)/particionesDinamicas.getMemoriaPpal();
-        	int drawSO = (int) (getWidth()*(tamanoSO/100));
+    	//Posicionar y dibujar en base a la matriz de estados (dibujo)
+    	posX = 50;
+    	posY2 = 0;
 
-        	g.setColor(amarillo);
-        	g.fillRect(pos, 0, drawSO, getHeight());
-        	g.setColor(negro);
-        	g.drawRect(pos, 0, drawSO, getHeight()-1);
-        	
-        	g.drawString(particionesDinamicas.getParticiones()[0].getProceso().getNombre(), 5, (getHeight()*2)/5);
-        	g.drawString("PID=" + particionesDinamicas.getParticiones()[0].getProceso().getPID(), 5, ((getHeight()*4)/5));
-        	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-        	
-        	pos = pos + drawSO;
-        	
-        	//Recorrer el arreglo de particiones para ir dibujando cada una
-        	for(int i=1; i<particionesDinamicas.getParticiones().length;i++) {
-        		
-        		int tamDibujo = cacularTamDibujo(i);
-        		int tamProceso = 0;
-        		
-        		g.setColor(verde);
-        		
-        		//Verificar si hay proceso en la particion, si lo hay calcular el tamaño
-        		if(particionesDinamicas.getParticiones()[i].getDisponible() == true)
-        			tamProceso = 0;	
-        		else
-        			tamProceso = cacularTamProceso(i);
-
-            	g.fillRect(pos, 0, tamDibujo, getHeight());	//Pintar particion
-            	
-            	if (tamProceso != 0) {		//Si la particion tiene proceso pintar proceso
-            		g.setColor(particionesDinamicas.getParticiones()[i].getProceso().getColor());
-            		g.fillRect(pos, 0, tamProceso, getHeight());
-            	}
-            	
-            	g.setColor(negro);			//Pintar borde
-            	g.drawRect(pos, 0, tamDibujo, getHeight()-1);
-            	
-            	if(particionesDinamicas.getParticiones()[i].getDisponible() == false) {
-                	g.drawString(particionesDinamicas.getParticiones()[i].getProceso().getNombre(), pos+5, (getHeight()*2)/5);
-                	g.drawString("PID=" + particionesDinamicas.getParticiones()[i].getProceso().getPID(), pos+5, ((getHeight()*4)/5));
-                	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-            	}
-            	pos = pos + tamDibujo;		//Se suma el area dibujada a la posiscion
-        	}
+    	for(int i=0; i<dibujo.size(); i++) {
+    		posY2 = 0;
+    		for(int j=0; j<dibujo.get(0).length; j++) {
+    			System.out.println("estado:" + dibujo.get(i)[j]);
+    			if(dibujo.get(i)[j] == 1) {
+    				g.setColor(verde);
+    			}
+    			else if(dibujo.get(i)[j] == 2) {
+    				g.setColor(gris);
+    			}
+    			
+    			else if(dibujo.get(i)[j] == 3) {
+    				g.setColor(rojo);
+    			}
+    			
+    			//Si el estado es sin iniciar o finalizado (1-4) no se dibuja nada
+    			if(dibujo.get(i)[j] != 0 & dibujo.get(i)[j] != 4) {
+    				//Se toma la posicion en Y final y se va restando para subir el dibujo
+    				posY2 = posY - ((j+1) * tamDibujoProc);
+    				//Se suma 2 y restan 4 para que no quede pegados los procesos
+    				g.fillRect(posX, (posY2 + 2), unidadT, tamDibujoProc - 4);
+    				System.out.println("(i,j) = ("+ i + "," + j + ") Datos: (" + posX + "," + (posY2 + 2) + ","+posX + "," + (tamDibujoProc - 4) + ")");
+    			}
+    		}
+    		posX = posX + unidadT;
     	}
-    	
-    	//Modelo Paginacion
-    	if(modelo == 4) {
-        	
-        	int pos = 0; 	//Llava la posicion de donde se va a dibujar
-        	g.setFont(new Font("Tahoma", Font.BOLD, 7));		//Tamaño del texto en el dibujo
-        	
-        	//Calculando tamaño del S.O. para ser dibujada
-        	double tamanoSO = (paginacion.getSO().getTamano()*100.0)/paginacion.getMemoriaPpal();
-        	int drawSO = (int) (getWidth()*(tamanoSO/100));
-
-        	g.setColor(amarillo);
-        	g.fillRect(pos, 0, drawSO, getHeight());
-        	g.setColor(negro);
-        	g.drawRect(pos, 0, drawSO, getHeight()-1);
-        	
-        	g.drawString(paginacion.getParticiones()[0].getProceso().getNombre(), 5, (getHeight()*2)/5);
-        	g.drawString("PID=" + paginacion.getParticiones()[0].getProceso().getPID(), 5, ((getHeight()*4)/5));
-        	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-        	
-        	pos = pos + drawSO;
-        	
-        	//Recorrer el arreglo de particiones para ir dibujando cada una
-        	for(int i=1; i<paginacion.getParticiones().length;i++) {
-        		
-        		int tamDibujo = cacularTamDibujo(i);
-        		int tamProceso = 0;
-  
-        		g.setColor(verde);
-        		
-        		//Verificar si hay proceso en la particion, si lo hay calcular el tamaño
-        		if(paginacion.getParticiones()[i].getDisponible() == true)
-        			tamProceso = 0;	
-        		else
-        			tamProceso = cacularTamProceso(i);
-
-            	g.fillRect(pos, 0, tamDibujo, getHeight());	//Pintar particion
-            	
-            	if (tamProceso != 0) {		//Si la particion tiene proceso pintar proceso
-            		g.setColor(paginacion.getParticiones()[i].getProceso().getColor());
-            		g.fillRect(pos, 0, tamProceso, getHeight());
-            	}
-            	
-            	g.setColor(negro);			//Pintar borde
-            	g.drawRect(pos, 0, tamDibujo, getHeight()-1);
-            	
-            	if(paginacion.getParticiones()[i].getDisponible() == false) {
-                	g.drawString(paginacion.getParticiones()[i].getProceso().getNombre(), pos+5, (getHeight()*2)/5);
-                	g.drawString("PID=" + paginacion.getParticiones()[i].getProceso().getPID(), pos+5, ((getHeight()*4)/5));
-                	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-            	}
-            	pos = pos + tamDibujo;		//Se suma el area dibujada a la posiscion
-        	}
-    	}
-    	
-    	//Modelo Segmentacion
-    	if(modelo == 5) {
-        	
-        	int pos = 0; 	//Llava la posicion de donde se va a dibujar
-        	g.setFont(new Font("Tahoma", Font.BOLD, 7));		//Tamaño del texto en el dibujo
-        	
-        	//Calculando tamaño del S.O. para ser dibujada
-        	double tamanoSO = (segmentacion.getSO().getTamano()*100.0)/segmentacion.getMemoriaPpal();
-        	int drawSO = (int) (getWidth()*(tamanoSO/100));
-
-        	g.setColor(amarillo);
-        	g.fillRect(pos, 0, drawSO, getHeight());
-        	g.setColor(negro);
-        	g.drawRect(pos, 0, drawSO, getHeight()-1);
-        	
-        	g.drawString(segmentacion.getParticiones()[0].getProceso().getNombre(), 5, (getHeight()*2)/5);
-        	g.drawString("PID=" + segmentacion.getParticiones()[0].getProceso().getPID(), 5, ((getHeight()*4)/5));
-        	
-        	pos = pos + drawSO;
-        	
-        	//Recorrer el arreglo de particiones para ir dibujando cada una
-        	for(int i=1; i<segmentacion.getParticiones().length;i++) {
-        		
-        		int tamDibujo = cacularTamDibujo(i);
-        		int tamProceso = 0;
-  
-        		g.setColor(verde);
-        		
-        		//Verificar si hay proceso en la particion, si lo hay calcular el tamaño
-        		if(segmentacion.getParticiones()[i].getDisponible() == true)
-        			tamProceso = 0;	
-        		else
-        			tamProceso = cacularTamProceso(i);
-
-            	g.fillRect(pos, 0, tamDibujo, getHeight());	//Pintar particion
-            	
-            	if (tamProceso != 0) {		//Si la particion tiene proceso pintar proceso segun el segmento
-            		if(segmentacion.getParticiones()[i].isCodigo())
-            			g.setColor( (Color)segmentacion.getParticiones()[i].getProceso().getSegCodigo()[2]);
-            		
-            		if(segmentacion.getParticiones()[i].isDatos())
-            			g.setColor( (Color)segmentacion.getParticiones()[i].getProceso().getSegDatos()[2]);
-            		
-            		if(segmentacion.getParticiones()[i].isPila())
-            			g.setColor( (Color)segmentacion.getParticiones()[i].getProceso().getSegPila()[2]);
-            		
-            		g.fillRect(pos, 0, tamProceso, getHeight());
-            	}
-            	
-            	g.setColor(negro);			//Pintar borde
-            	g.drawRect(pos, 0, tamDibujo, getHeight()-1);
-            	
-            	if(segmentacion.getParticiones()[i].getDisponible() == false) {
-                	g.drawString(segmentacion.getParticiones()[i].getProceso().getNombre(), pos+5, (getHeight()*2)/5);
-                	g.drawString("PID=" + segmentacion.getParticiones()[i].getProceso().getPID(), pos+5, ((getHeight()*4)/5));
-                	//g.drawString("T: " + partcionesEstFijas.getParticiones()[0].getTamano() + "KB", 5, (getHeight()*3)/5);
-            	}
-            	pos = pos + tamDibujo;		//Se suma el area dibujada a la posiscion
-        	}
-    	}
-    	*/
     }
+	
+	public void imprimirEstDibujo() {
+		System.out.println(" *** INICIO *** " );
+		for(int i=0; i < dibujo.size(); i++) {
+			for(int j=0; j < dibujo.get(0).length; j++) {
+				System.out.print(" | " + dibujo.get(i)[j] + " | " );
+			}
+			System.out.println();
+		}
+		System.out.println(" *** FIN *** " );
+	}
 	
 }

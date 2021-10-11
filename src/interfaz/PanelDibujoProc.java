@@ -95,7 +95,7 @@ public class PanelDibujoProc extends JPanel{
     	for(int i=0; i<dibujo.size(); i++) {
     		posY2 = 0;
     		for(int j=0; j<dibujo.get(0).length; j++) {
-    			System.out.println("estado:" + dibujo.get(i)[j]);
+    			//System.out.println("estado:" + dibujo.get(i)[j]);
     			if(dibujo.get(i)[j] == 1) {
     				g.setColor(verde);
     			}
@@ -113,7 +113,7 @@ public class PanelDibujoProc extends JPanel{
     				posY2 = posY - ((j+1) * tamDibujoProc);
     				//Se suma 2 y restan 4 para que no quede pegados los procesos
     				g.fillRect(posX, (posY2 + 2), unidadT, tamDibujoProc - 4);
-    				System.out.println("(i,j) = ("+ i + "," + j + ") Datos: (" + posX + "," + (posY2 + 2) + ","+posX + "," + (tamDibujoProc - 4) + ")");
+    				//System.out.println("(i,j) = ("+ i + "," + j + ") Datos: (" + posX + "," + (posY2 + 2) + ","+posX + "," + (tamDibujoProc - 4) + ")");
     			}
     		}
     		posX = posX + unidadT;

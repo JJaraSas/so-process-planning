@@ -8,8 +8,6 @@ import javax.swing.JLabel;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
-
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.JRadioButton;
@@ -66,16 +64,14 @@ public class JFramePrincipal extends JFrame implements ActionListener{
 	
 	private JTable tablaProcesos;
 	private JScrollPane scrollTabla;
-	private JLabel lblTablaProcesos;
 	private String[] nombreColumna = {"Proceso", "Llegada", "T. Ejecucion", "Inicio B.", "Duracion B.", "T. Espera", "T. Bloqueo"};
 	private Object[][] procesoModelo = new Object[0][7];
 	
-	private JPanel panelDibujo;
 	private PanelDibujoProc dibujoProcesos;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public JFramePrincipal() {
-		setTitle("Simulador Gestor de Memoria");
+		setTitle("Simulador Planificacion de Procesos");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(50, 50, 1000, 700);
 		
